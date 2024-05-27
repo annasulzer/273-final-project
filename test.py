@@ -14,7 +14,8 @@ def test_sim():
         print("Failure to Initialize Observer", e)
 
     try:
-        o.pos_at_t(10)
+        (o[10])
+
     except Exception as e:
         print("Failure to Propogate Orbit", e)
 
@@ -25,7 +26,7 @@ def test_sim():
         print("Failue to Initialize Debris", e)
 
     try:
-        d.pos_at_t(1)
+        d[1]
     
     except Exception as e:
         print("Failure to Properly Propogate Debris",e)
@@ -37,12 +38,45 @@ def test_sim():
         print("Failue to Initialize Many Features", e)
 
     try:
-        dm.pos_at_t(1)
-    
+        
+        (dm[1])
+            
     except Exception as e:
         print("Failure to Properly Propogate Many Features",e)
     
+    try:
+        m = sim.MeasurementModel(dm,np.array([o]))
+        (o[1])
+        # (m[1])
 
+    except Exception as e:
+        print("Problem Making Measurement Model",e)
+
+    try:
+        print("ctest")
+        orbit_radius = 10
+        sat1_x0 = np.array([[orbit_radius,0,0]]).T #units u
+        sat1_nv0 = np.array([[0,1,1]]).T/np.linalg.norm(np.array([0,1,1])).T
+
+        sat2_x0 = np.array([[0,orbit_radius,0]]).T #units u
+        sat2_nv0 = np.array([[1,0,1]]).T/np.linalg.norm(np.array([1,0,1])).T
+
+        sat3_x0 = np.array([[0,0,orbit_radius]]).T #units u
+        sat3_nv0 = np.array([[1,1,0]]).T/np.linalg.norm(np.array([1,1,0])).T
+
+        o1 = sim.observer(sat1_x0,sat1_nv0)
+        o2 = sim.observer(sat2_x0,sat2_nv0)
+        o3 = sim.observer(sat3_x0,sat3_nv0)
+        debris_points = np.array([[1,1,1],[1,1,-1],[1,-1,1],[1,-1,-1],[-1,1,1],[-1,1,-1],[-1,-1,1],[-1,-1,-1],[3,0,1],[3,0,-1],[-2,0,-1]]).T
+        omega = .4 # rad/s
+        quat = np.array([0,1*np.sin(omega/2),0,np.cos(omega/2)])
+        deb = sim.debris(debris_points,quat)
+        mtest = sim.MeasurementModel(deb,np.array([o1,o2,o3]))
+        print(mtest[4][1,1])
+    except Exception as e:
+        print("Problem with multiple satellite formulation",e)
+    
+    print("Tests Complete")
 
 
 if __name__ == "__main__":

@@ -11,28 +11,47 @@ class observer():
         self.velocity = np.linalg.norm(v0)
         self.x_unit = x0/self.radius
         self.vel_unit = v0/self.velocity
-    def pos_at_t(self,t):
+    def __getitem__(self,t):
         #returns in the RTN frame, so all are orbiting about [r,t,n] = [0,0,0]
-        return self.radius * np.sin(t*np.pi*2/self.orbital_period) * self.vel_unit + self.radius * np.cos(t*np.pi*2/self.orbital_period) * self.x_unit
+        
+        chunk1 = self.radius * np.sin(t*np.pi*2/self.orbital_period) * self.vel_unit
+        chunk2 = self.radius * np.cos(t*np.pi*2/self.orbital_period) * self.x_unit
+        print(chunk1.shape)
+        print(chunk2.shape)
+        return chunk1 + chunk2
     
 class debris():
     def __init__(self,features,omega):
         # features is a np array of starting feature points
         # omega is an arbitrary angular velocity
         self.omega = omega #quaternion #rad/s
-        self.omega_unit = np.linalg.norm(omega)
         self.features = features
         self.radii = np.linalg.norm(features,axis=0)
 
     
-    def pos_at_t(self,t):
+    def __getitem__(self,t):
         #returns all of the features at a timestep t
         full_rot = 2*np.arccos(self.omega[3]) * t # will get the absolute rotation in rad
         quat_vec = self.omega[:3]/np.linalg.norm(self.omega[:3])
         quat_vec = quat_vec * np.sin(full_rot/2)
         new_quat = np.array([quat_vec[0],quat_vec[1],quat_vec[2],np.cos(full_rot/2)])
         rotation = R.from_quat(new_quat)
-        rotated_features = rotation.apply(self.features.T)
+        rotated_features = rotation.apply(self.features.T).T
+
         return rotated_features
 
+class MeasurementModel:
+    def __init__(self,debris_init,observers_init):
+        # Takes in a debris state (only one) and an array of observers
+        self.debris = debris_init
+        self.observers = observers_init
 
+    def __getitem__(self,t):
+        # Returns the measurement state 
+        lst = []
+        for o in self.observers:
+            print(o[t])
+            print(self.debris)
+            dist = np.linalg.norm(self.debris[t]- o[t],axis=0)
+            lst.append(dist)
+        return np.array(lst)
