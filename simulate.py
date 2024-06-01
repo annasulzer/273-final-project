@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # Initialize the Quaternion for Debris Rotation.
     # Given any normalized direction vector [nx, ny, nz] and angular rotation [omega], the quaternion is of the
     # form: [nx*sin(omega/2),ny*sin(omega/2),nz*sin(omega/2),cos(omega/2)]
-    omega = 0.4  # rad/s
+    omega = 0.04  # rad/s
     quat = np.array([0, 1 * np.sin(omega / 2), 0, np.cos(omega / 2)])
 
     # Initialize the Debris Object

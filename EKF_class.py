@@ -2,11 +2,11 @@ import numpy as np
 from scipy.sparse import block_diag
 
 class KalmanFilter:
-    def __init__(self, mu0, sigma0, del_t=1):
+    def __init__(self, mu0, sigma0, del_t):
         self.sigma = sigma0
         self.mu = mu0
         self.del_t = del_t
-        self.Q = 0.005 * np.eye(len(mu0))
+        self.Q = 0.05 * np.eye(len(mu0))
         self.R = 0.00001 * np.eye(11)
 
     def predict(self):
@@ -18,8 +18,8 @@ class KalmanFilter:
         STM_omega = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
         STM_points = np.array([
             [1, -self.del_t * omega_N, self.del_t * omega_T],
-            [self.del_t * omega_N, 1, self.del_t * omega_R],
-            [-self.del_t * omega_T, -self.del_t * omega_R, 1]
+            [self.del_t * omega_N, 1, -self.del_t * omega_R],
+            [-self.del_t * omega_T, self.del_t * omega_R, 1]
         ])
         
         matrices = [STM_COM, STM_omega] + [STM_points] * 11
@@ -36,20 +36,19 @@ class KalmanFilter:
     def update(self, y, mu_est, sigma_est, sat_pos):
         self.C = np.zeros((11, 39))
         valid_indices = []
-
+        g = []
         for i in range(len(y)):
             if not np.isnan(y[i]):
                 j = 6 + 3 * i
-                point_pos = mu_est[j:j+3]
+                point_pos = self.mu[j:j+3]
                 print(np.linalg.norm(sat_pos - point_pos))
+                print((sat_pos - point_pos))
                 dist = np.linalg.norm(sat_pos - point_pos)
-                self.C[i, j:j+3] = np.array([
-                    -(sat_pos[0] - point_pos[0]) / dist,
-                    -(sat_pos[1] - point_pos[1]) / dist,
-                    -(sat_pos[2] - point_pos[2]) / dist
-                ])
+                self.C[i, j:j+3] = (point_pos - sat_pos)/dist
+
                 valid_indices.append(i)
-        
+                g.append(dist)
+            
         if len(valid_indices) == 0:
             print("No valid measurements available for update.")
             return mu_est, sigma_est
@@ -59,7 +58,12 @@ class KalmanFilter:
 
         y_valid = y.copy()
         y_valid[np.isnan(y_valid)] = 0
-        self.mu = mu_est + K @ (y_valid - self.C @ mu_est)
+        print('C', self.C @mu_est)
+     
+        print(y_valid - g)
+        
+
+        self.mu = mu_est + K @ (y_valid - g)
         self.sigma = sigma_est - K @ self.C @ sigma_est
 
 
