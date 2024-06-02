@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.sparse import block_diag
+
 
 class KalmanFilter:
     def __init__(self, mu0, sigma0, del_t):
@@ -10,9 +10,9 @@ class KalmanFilter:
         self.R = 1 * np.eye(11)
 
     def predict(self):
-        omega_x = 0 #self.mu[0]
-        omega_y = 0.01 #self.mu[1]
-        omega_z = 0 #self.mu[2]
+        omega_x = self.mu[0]
+        omega_y = self.mu[1]
+        omega_z = self.mu[2]
 
         self.del_t = 0.5*self.del_t
         STM = np.eye(len(self.mu))
@@ -70,17 +70,5 @@ class KalmanFilter:
 
         return self.mu, self.sigma
 
-if __name__ == "__main__":
-    # Example initialization
-    mu0 = np.random.rand(36)
-    sigma0 = np.eye(36)
-    kf = KalmanFilter(mu0, sigma0)
 
-    # Example predict and update
-    mu_pred, sigma_pred = kf.predict()
-    y = np.random.rand(11)
-    y[3] = np.nan  # Example with one NaN
-    sat_pos = np.random.rand(3)
-
-    mu_upd, sigma_upd = kf.update(y, mu_pred, sigma_pred, sat_pos)
  

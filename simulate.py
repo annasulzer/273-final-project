@@ -33,7 +33,7 @@ class debris():
         self.del_t = del_t
 
     def __getitem__(self, i):
-        t = i#*self.del_t
+        t = i*self.del_t
         # returns all of the features at a timestep t
 
         theta = np.linalg.norm(self.omega[:3]) * t  # Changed line
