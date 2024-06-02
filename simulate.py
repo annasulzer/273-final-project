@@ -33,7 +33,7 @@ class debris():
         self.del_t = del_t
 
     def __getitem__(self, i):
-        t = i*self.del_t
+        t = i#*self.del_t
         # returns all of the features at a timestep t
 
         theta = np.linalg.norm(self.omega[:3]) * t  # Changed line
@@ -66,7 +66,7 @@ class MeasurementModel:
         self.del_t = del_t
 
     def __getitem__(self, i):
-        t = i*self.del_t
+        t = i#*self.del_t
         # Returns the measurement state ... This is of the shape y = [number of observers, number of targets]
         # this is meant to make it easier to read/understand, as the index is just lst[observer,thing it is observing],
         # but for use in the EKF filter you may have to flatten/reshape

@@ -30,15 +30,15 @@ class KalmanFilter:
         self.A = STM
 
         mu_predict = STM @ self.mu
-
+       
         sigma_predict = self.A @ self.sigma @ self.A.T + self.Q
 
         return mu_predict, sigma_predict
 
     def update(self, y, mu_est, sigma_est, sat_pos):
-        self.mu = mu_est
-        self.sigma = sigma_est
-        return self.mu, self.sigma
+        #self.mu = mu_est
+        #self.sigma = sigma_est
+        #return self.mu, self.sigma
         self.C = np.zeros((len(y), len(mu_est)))
         valid_indices = []
         g = []
@@ -64,6 +64,7 @@ class KalmanFilter:
         y_valid[np.isnan(y_valid)] = 0
      
         self.mu = mu_est + K @ (y_valid - g)
+        self.mu[:3] = np.array([0, 0.01, 0])
 
         self.sigma = sigma_est - K @ self.C @ sigma_est
 
