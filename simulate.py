@@ -47,10 +47,10 @@ class debris():
             np.cos(theta / 2)
         ])
 
-        #full_rot = 2 * np.arccos(self.omega[3]) * t  # will get the absolute rotation in rad
-        #quat_vec = self.omega[:3] / np.linalg.norm(self.omega[:3])
-        #quat_vec = quat_vec * np.sin(full_rot / 2)
-        #new_quat = np.array([quat_vec[0], quat_vec[1], quat_vec[2], np.cos(full_rot / 2)])
+        full_rot = 2 * np.arccos(self.omega[3]) * t  # will get the absolute rotation in rad
+        quat_vec = self.omega[:3] / np.linalg.norm(self.omega[:3])
+        quat_vec = quat_vec * np.sin(full_rot / 2)
+        new_quat = np.array([quat_vec[0], quat_vec[1], quat_vec[2], np.cos(full_rot / 2)])
         rotation = R.from_quat(new_quat)
         rotated_features = rotation.apply(self.features.T).T
 
@@ -118,7 +118,10 @@ if __name__ == "__main__":
     # Given any normalized direction vector [nx, ny, nz] and angular rotation [omega], the quaternion is of the
     # form: [nx*sin(omega/2),ny*sin(omega/2),nz*sin(omega/2),cos(omega/2)]
     omega = 0.1  # rad/s
+
     quat = np.array([0, 1 * np.sin(omega / 2), 0, np.cos(omega / 2)])
+    print(quat)
+
 
     # Initialize the Debris Object
     deb = debris(debris_points, quat, del_t)
@@ -133,13 +136,16 @@ if __name__ == "__main__":
     print(mtest[4].flatten())
     posehist = np.zeros((int(60/del_t), 3))
     for i in range(int(60/del_t)):
+        
         debris = deb[i]
         posehist[i, :] = debris[:, 2]
 
     time_step = del_t
     time_array = np.arange(0, 60, time_step)
 
+    plt.figure()
 
+    plt.plot(time_array, np.linalg.norm(posehist, axis=1))
 
     fig, axs = plt.subplots(3, 1, figsize=(10, 15))
 
