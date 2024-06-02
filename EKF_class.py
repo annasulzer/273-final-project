@@ -10,9 +10,9 @@ class KalmanFilter:
         self.R = 1 * np.eye(11)
 
     def predict(self):
-        omega_x = self.mu[0]
-        omega_y = self.mu[1]
-        omega_z = self.mu[2]
+        omega_x = 0 #self.mu[0]
+        omega_y = 0.1 #self.mu[1]
+        omega_z = 0 #self.mu[2]
 
         STM = np.eye(len(self.mu))
         for i in range(3, len(self.mu), 3):
@@ -31,6 +31,9 @@ class KalmanFilter:
         return mu_predict, sigma_predict
 
     def update(self, y, mu_est, sigma_est, sat_pos):
+        self.mu = mu_est
+        self.sigma = sigma_est
+        return mu_est, sigma_est
         self.C = np.zeros((len(y), len(mu_est)))
         valid_indices = []
         g = []
@@ -57,9 +60,10 @@ class KalmanFilter:
         y_valid[np.isnan(y_valid)] = 0
      
         self.mu = mu_est + K @ (y_valid - g)
+
         self.sigma = sigma_est - K @ self.C @ sigma_est
 
-        return mu_est,sigma_est
+        return mu_est, sigma_est
 
 if __name__ == "__main__":
     # Example initialization
