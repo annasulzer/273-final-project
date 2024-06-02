@@ -41,7 +41,7 @@ class KalmanFilter:
         #return self.mu, self.sigma
         self.C = np.zeros((len(y), len(mu_est)))
         valid_indices = []
-        g = []
+        g = np.zeros(len(y))
         for i in range(len(y)):
             if not np.isnan(y[i]):
                 j = 3 + 3 * i
@@ -52,7 +52,7 @@ class KalmanFilter:
                 self.C[i, j:j+3] = (point_pos - sat_pos)/dist
 
                 valid_indices.append(i)
-                g.append(dist)
+                g[i] = dist
         
         if len(valid_indices) == 0:
             print("No valid measurements available for update.")
