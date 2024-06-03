@@ -7,7 +7,7 @@ class KalmanFilter:
         self.mu = mu0
         self.del_t = del_t
         self.Q = 0.01 * np.eye(len(mu0))
-        self.R = 0.001 * np.eye(11)
+        self.R = 0.00001 * np.eye(11)
 
     def predict(self):
         omega_x = self.mu[0]
