@@ -57,13 +57,14 @@ class debris():
         return rotated_features
 
 class MeasurementModel:
-    def __init__(self, debris_init, observers_init, del_t, n_blind=0):
+    def __init__(self, debris_init, observers_init, del_t, n_blind, noise_covariance):
         # Takes in a debris state (only one) and an array of observers
 
         self.debris = debris_init
         self.observers = observers_init
         self.n_blind = n_blind
         self.del_t = del_t
+        self.noise_covariance = noise_covariance
 
     def __getitem__(self, i):
         t = i#*self.del_t
@@ -74,17 +75,23 @@ class MeasurementModel:
         # Seed the RNG so it has the same output every time with respect to the timestep
         np.random.seed(24601 + i)
         lst = []
-        for o in self.observers:
-            dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
+        #for o in self.observers:
+         #   dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
 
-
+        
+        #Blind Spots
         total_points = self.debris.features.shape[1]
         blind_indices = np.random.choice(range(total_points), self.n_blind, replace=False) if self.n_blind > 0 else []
 
         for o in self.observers:
             dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
+            #Add noise
+            if self.noise_covariance is not None:
+                noise = np.random.multivariate_normal(np.zeros(dist.shape[0]), self.noise_covariance, 1).flatten()
+                dist += noise
             dist[blind_indices] = np.nan
             lst.append(dist)
+
 
 
         return np.array(lst)
