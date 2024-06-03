@@ -6,7 +6,8 @@ class KalmanFilter:
         self.sigma = sigma0
         self.mu = mu0
         self.del_t = del_t
-        self.Q = 0.01 * np.eye(len(mu0))
+        self.Q = 0.1 * del_t * np.eye(len(mu0))
+        self.Q[:3, :3] = 0.00001 * np.eye(3)#angular velocity
         self.R = 0.00001 * np.eye(11)
 
     def predict(self):
