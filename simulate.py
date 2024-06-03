@@ -86,10 +86,12 @@ class MeasurementModel:
         for o in self.observers:
             dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
             #Add noise
+     
             if self.noise_covariance is not None:
                 noise = np.random.multivariate_normal(np.zeros(dist.shape[0]), self.noise_covariance, 1).flatten()
                 dist += noise
             dist[blind_indices] = np.nan
+         
             lst.append(dist)
 
 

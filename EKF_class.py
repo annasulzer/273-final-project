@@ -32,13 +32,11 @@ class KalmanFilter:
         self.A = STM
 
         mu_predict = STM @ self.mu
-       
         sigma_predict = self.A @ self.sigma @ self.A.T + self.Q
 
         return mu_predict, sigma_predict
 
     def update(self, y, mu_est, sigma_est, sat_pos):
-
         self.C = np.zeros((len(y), len(mu_est)))
         valid_indices = []
         g = np.zeros(len(y))
