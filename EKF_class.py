@@ -7,10 +7,11 @@ class KalmanFilter:
         self.mu = mu0
         self.del_t = del_t
         self.Q = 0.1 * del_t * np.eye(len(mu0))
-        self.Q[:3, :3] = 0.00001 * np.eye(3)#angular velocity
+        self.Q[:3, :3] = 0.000001 * np.eye(3)#angular velocity
         self.R = 0.00001 * np.eye(11)
 
     def predict(self):
+
         omega_x = self.mu[0]
         omega_y = self.mu[1]
         omega_z = self.mu[2]
@@ -37,6 +38,7 @@ class KalmanFilter:
         return mu_predict, sigma_predict
 
     def update(self, y, mu_est, sigma_est, sat_pos):
+
         self.C = np.zeros((len(y), len(mu_est)))
         valid_indices = []
         g = np.zeros(len(y))
@@ -65,7 +67,7 @@ class KalmanFilter:
 
         self.sigma = sigma_est - K @ self.C @ sigma_est
 
-        return self.mu, self.sigma
+        return self.mu, self.sigma, np.linalg.matrix_rank(self.C)
 
 
  
