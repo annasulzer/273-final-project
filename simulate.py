@@ -34,27 +34,16 @@ class debris():
 
     def __getitem__(self, i):
         t = i*self.del_t
-        # returns all of the features at a timestep t
 
-        theta = np.linalg.norm(self.omega[:3]) * t  # Changed line
-        # Normalize the rotation axis
-        axis = self.omega[:3] / np.linalg.norm(self.omega[:3])  # Changed line
-        # Create a new quaternion for the rotation at time t
-        new_quat = np.array([  # Changed lines
-            axis[0] * np.sin(theta / 2),
-            axis[1] * np.sin(theta / 2),
-            axis[2] * np.sin(theta / 2),
-            np.cos(theta / 2)
-        ])
-
-        full_rot = 2 * np.arccos(self.omega[3]) * t  # will get the absolute rotation in rad
-        quat_vec = self.omega[:3] / np.linalg.norm(self.omega[:3])
-        quat_vec = quat_vec * np.sin(full_rot / 2)
-        new_quat = np.array([quat_vec[0], quat_vec[1], quat_vec[2], np.cos(full_rot / 2)])
+        #returns all of the features at a timestep t
+        full_rot = 2*np.arccos(self.omega[3]) * t # will get the absolute rotation in rad
+        quat_vec = self.omega[:3]/np.linalg.norm(self.omega[:3])
+        quat_vec = quat_vec * np.sin(full_rot/2)
+        new_quat = np.array([quat_vec[0],quat_vec[1],quat_vec[2],np.cos(full_rot/2)])
         rotation = R.from_quat(new_quat)
         rotated_features = rotation.apply(self.features.T).T
-
         return rotated_features
+        
 
 class MeasurementModel:
     def __init__(self, debris_init, observers_init, del_t, n_blind, noise_covariance):
@@ -97,7 +86,7 @@ class MeasurementModel:
 
 
         return np.array(lst)
-
+'''
 if __name__ == "__main__":
     # Here is an example of the satellite formulation and observers running
     del_t = 0.1
@@ -186,3 +175,4 @@ if __name__ == "__main__":
 
 
 
+'''

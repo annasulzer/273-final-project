@@ -6,7 +6,7 @@ class KalmanFilter:
         self.sigma = sigma0
         self.mu = mu0
         self.del_t = del_t
-        self.Q = 0.1 * del_t * np.eye(len(mu0))
+        self.Q = 1 * del_t * np.eye(len(mu0))
         self.Q[:3, :3] = 0.000001 * np.eye(3)#angular velocity
         self.R = 0.00001 * np.eye(11)
 
@@ -16,56 +16,63 @@ class KalmanFilter:
         omega_y = self.mu[1]
         omega_z = self.mu[2]
 
-        self.del_t = 0.5*self.del_t
+        
         STM = np.eye(len(self.mu))
+        self.del_t = 0.5*self.del_t 
         for i in range(3, len(self.mu), 3):
+            
             STM[i:i+3, 0:3] = [[0, self.del_t * self.mu[i+2], -self.del_t * self.mu[i+1]],
                             [-self.del_t * self.mu[i+2], 0, self.del_t * self.mu[i]],
                             [self.del_t * self.mu[i+1], -self.del_t * self.mu[i], 0]]
-                        
+            
+            
             STM[i:i+3, i:i+3] = [[1, -self.del_t * omega_z, self.del_t * omega_y],
                                 [self.del_t * omega_z, 1, -self.del_t * omega_x],
                                 [-self.del_t * omega_y, self.del_t * omega_x, 1]]
-
-        self.del_t = 2*self.del_t                    
-   
+        self.del_t = 2*self.del_t 
+                          
+        
         self.A = STM
-
-        mu_predict = STM @ self.mu
+        
+        mu_predict = self.A @ self.mu #+  np.random.multivariate_normal(np.zeros(self.mu.shape[0]), self.Q, 1).flatten()
         sigma_predict = self.A @ self.sigma @ self.A.T + self.Q
 
         return mu_predict, sigma_predict
 
     def update(self, y, mu_est, sigma_est, sat_pos):
-        self.C = np.zeros((len(y), len(mu_est)))
-        valid_indices = []
-        g = np.zeros(len(y))
-        for i in range(len(y)):
-            if not np.isnan(y[i]):
-                j = 3 + 3 * i
-                point_pos = self.mu[j:j+3]#or mu_est??
-                
-                dist = np.linalg.norm(point_pos - sat_pos)
-                
-                self.C[i, j:j+3] = (point_pos - sat_pos)/dist
 
-                valid_indices.append(i)
-                g[i] = dist
-        
+        valid_indices = [i for i in range(len(y)) if not np.isnan(y[i])]
+
+        # Initialize 
+        self.C = np.zeros((len(valid_indices), len(mu_est)))
+        g = np.zeros(len(valid_indices))
+
+        for idx, i in enumerate(valid_indices):
+            j = 3 + 3 * i
+            point_pos = mu_est[j:j+3]
+            
+            dist = np.linalg.norm(point_pos - sat_pos)
+            
+            self.C[idx, j:j+3] = (point_pos - sat_pos) / dist
+            g[idx] = dist
+
         if len(valid_indices) == 0:
             print("No valid measurements available for update.")
             return mu_est, sigma_est
 
-        K = sigma_est @ self.C.T @ np.linalg.inv(self.C @ sigma_est @ self.C.T + self.R)
+        valid_indices = np.array(valid_indices)
+        K = sigma_est @ self.C.T @ np.linalg.inv(self.C @ sigma_est @ self.C.T + self.R[valid_indices[:, None], valid_indices]) #eliminate all dimensions that are nan 
+        #plt.spy() visualize sparsity structure of matrix -> check if sigma_est and C if block diagonalor sufficially close then we can do incremental update
+        #information filter (not recommended)
+        y_valid = y[valid_indices]
 
-        y_valid = y.copy()
-        y_valid[np.isnan(y_valid)] = 0
-     
         self.mu = mu_est + K @ (y_valid - g)
 
         self.sigma = sigma_est - K @ self.C @ sigma_est
+        O = np.vstack((self.C, self.C@self.A, self.C@self.A@self.A.T))
 
-        return self.mu, self.sigma, np.linalg.matrix_rank(self.C)
+
+        return self.mu, self.sigma, np.linalg.matrix_rank(O)
 
 
  
