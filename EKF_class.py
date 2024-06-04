@@ -34,7 +34,7 @@ class KalmanFilter:
         
         self.A = STM
         
-        mu_predict = self.A @ self.mu #+  np.random.multivariate_normal(np.zeros(self.mu.shape[0]), self.Q, 1).flatten()
+        mu_predict = self.A @ self.mu 
         sigma_predict = self.A @ self.sigma @ self.A.T + self.Q
 
         return mu_predict, sigma_predict
