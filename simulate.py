@@ -61,18 +61,24 @@ class MeasurementModel:
         # this is meant to make it easier to read/understand, as the index is just lst[observer,thing it is observing],
         # but for use in the EKF filter you may have to flatten/reshape
 
-        # Seed the RNG so it has the same output every time with respect to the timestep
-        np.random.seed(24601 + i)
+        
         lst = []
         #for o in self.observers:
          #   dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
 
         
-        #Blind Spots
-        total_points = self.debris.features.shape[1]
-        blind_indices = np.random.choice(range(total_points), self.n_blind, replace=False) if self.n_blind > 0 else []
-
+        o_nr = 0
         for o in self.observers:
+            o_nr+= 1
+            # Seed the RNG so it has the same output every time with respect to the timestep
+            np.random.seed(24601 + i + o_nr)
+
+             #Blind Spots
+            total_points = self.debris.features.shape[1]
+            blind_indices = np.random.choice(range(total_points), self.n_blind, replace=False) if self.n_blind > 0 else []
+
+
+
             dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
             #Add noise
      
