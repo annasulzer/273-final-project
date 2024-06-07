@@ -9,7 +9,7 @@ class KalmanFilter:
         self.del_t = del_t
         self.Q = 1 * del_t * np.eye(len(mu0))
         self.Q[:3, :3] = 0.000001 * np.eye(3)#angular velocity
-        self.R = 0.001 * np.eye(33)
+        self.R = 0.01 * np.eye(33)
 
     def predict(self):
 
@@ -42,10 +42,7 @@ class KalmanFilter:
         return mu_predict, sigma_predict
 
     def update(self, y, mu_est, sigma_est, sat_pos):
-        #self.mu = mu_est
-        #self.sigma = sigma_est
 
-        #return self.mu, self.sigma,  1
         
         valid_indices = [i for i in range(len(y)) if not np.isnan(y[i])]
    
@@ -72,7 +69,7 @@ class KalmanFilter:
             self.C[idx, j:j+3] = (point_pos - sat_pos[n]) / dist
             g[idx] = dist
 
-            
+
         if len(valid_indices) == 0:
             print("No valid measurements available for update.")
             return mu_est, sigma_est
@@ -96,7 +93,7 @@ class KalmanFilter:
         O = np.vstack((self.C, self.C@self.A, self.C@self.A@self.A.T))
 
        
-        return self.mu, self.sigma, self.C#np.linalg.matrix_rank(O)
+        return self.mu, self.sigma, np.linalg.matrix_rank(O)
 
 
  

@@ -66,15 +66,15 @@ class MeasurementModel:
         #for o in self.observers:
          #   dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
 
-        
+        total_points = self.debris.features.shape[1]
+
         o_nr = 0
         for o in self.observers:
             o_nr+= 1
             # Seed the RNG so it has the same output every time with respect to the timestep
-            np.random.seed(24601 + i + o_nr)
+            np.random.seed(24603 + i + o_nr)
 
              #Blind Spots
-            total_points = self.debris.features.shape[1]
             blind_indices = np.random.choice(range(total_points), self.n_blind, replace=False) if self.n_blind > 0 else []
 
 
