@@ -34,27 +34,16 @@ class debris():
 
     def __getitem__(self, i):
         t = i*self.del_t
-        # returns all of the features at a timestep t
 
-        theta = np.linalg.norm(self.omega[:3]) * t  # Changed line
-        # Normalize the rotation axis
-        axis = self.omega[:3] / np.linalg.norm(self.omega[:3])  # Changed line
-        # Create a new quaternion for the rotation at time t
-        new_quat = np.array([  # Changed lines
-            axis[0] * np.sin(theta / 2),
-            axis[1] * np.sin(theta / 2),
-            axis[2] * np.sin(theta / 2),
-            np.cos(theta / 2)
-        ])
-
-        full_rot = 2 * np.arccos(self.omega[3]) * t  # will get the absolute rotation in rad
-        quat_vec = self.omega[:3] / np.linalg.norm(self.omega[:3])
-        quat_vec = quat_vec * np.sin(full_rot / 2)
-        new_quat = np.array([quat_vec[0], quat_vec[1], quat_vec[2], np.cos(full_rot / 2)])
+        #returns all of the features at a timestep t
+        full_rot = 2*np.arccos(self.omega[3]) * t # will get the absolute rotation in rad
+        quat_vec = self.omega[:3]/np.linalg.norm(self.omega[:3])
+        quat_vec = quat_vec * np.sin(full_rot/2)
+        new_quat = np.array([quat_vec[0],quat_vec[1],quat_vec[2],np.cos(full_rot/2)])
         rotation = R.from_quat(new_quat)
         rotated_features = rotation.apply(self.features.T).T
-
         return rotated_features
+        
 
 class MeasurementModel:
     def __init__(self, debris_init, observers_init, del_t, n_blind, noise_covariance):
@@ -72,30 +61,38 @@ class MeasurementModel:
         # this is meant to make it easier to read/understand, as the index is just lst[observer,thing it is observing],
         # but for use in the EKF filter you may have to flatten/reshape
 
-        # Seed the RNG so it has the same output every time with respect to the timestep
-        np.random.seed(24601 + i)
+        
         lst = []
         #for o in self.observers:
          #   dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
 
-        
-        #Blind Spots
         total_points = self.debris.features.shape[1]
-        blind_indices = np.random.choice(range(total_points), self.n_blind, replace=False) if self.n_blind > 0 else []
 
+        o_nr = 0
         for o in self.observers:
+            o_nr+= 1
+            # Seed the RNG so it has the same output every time with respect to the timestep
+            np.random.seed(24603 + i + o_nr)
+
+             #Blind Spots
+            blind_indices = np.random.choice(range(total_points), self.n_blind, replace=False) if self.n_blind > 0 else []
+
+
+
             dist = np.linalg.norm(self.debris[t] - o[t], axis=0)
             #Add noise
+     
             if self.noise_covariance is not None:
                 noise = np.random.multivariate_normal(np.zeros(dist.shape[0]), self.noise_covariance, 1).flatten()
                 dist += noise
             dist[blind_indices] = np.nan
+         
             lst.append(dist)
 
 
 
         return np.array(lst)
-
+'''
 if __name__ == "__main__":
     # Here is an example of the satellite formulation and observers running
     del_t = 0.1
@@ -184,3 +181,4 @@ if __name__ == "__main__":
 
 
 
+'''
